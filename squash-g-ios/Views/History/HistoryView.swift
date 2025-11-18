@@ -30,32 +30,31 @@ struct HistoryView: View {
                             .foregroundColor(.white.opacity(0.4))
                     }
                 } else {
-                    List {
-                        ForEach(matches) { match in
-                            NavigationLink(destination: MatchDetailView(match: match)) {
-                                MatchRowView(match: match, highlightPlayer: nil)
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    // Ask for confirmation before deleting
-                                    pendingDeleteMatch = match
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                    ScrollView(showsIndicators: true) {
+                        LazyVStack(spacing: 10, pinnedViews: []) {
+                            ForEach(matches) { match in
+                                NavigationLink(destination: MatchDetailView(match: match)) {
+                                    MatchRowView(match: match, highlightPlayer: nil)
                                 }
+                                .buttonStyle(PlainButtonStyle())
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        pendingDeleteMatch = match
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
 
-                                Button {
-                                    selectedMatchForSheet = match
-                                } label: {
-                                    Label("View", systemImage: "eye")
+                                    Button {
+                                        selectedMatchForSheet = match
+                                    } label: {
+                                        Label("View", systemImage: "eye")
+                                    }
                                 }
-                                .tint(SquashGColors.neonCyan)
                             }
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                         }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
                     }
-                    .listStyle(.plain)
                     .ignoresSafeArea(edges: .bottom)
                     .alert("Delete match?", isPresented: Binding(get: { pendingDeleteMatch != nil }, set: { if !$0 { pendingDeleteMatch = nil } })) {
                         Button("Delete", role: .destructive) {
