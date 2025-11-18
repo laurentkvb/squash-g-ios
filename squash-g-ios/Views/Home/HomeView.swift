@@ -172,6 +172,50 @@ struct SuggestedPairRow: View {
     }
 }
 
+// MARK: - SuggestedPairChip (compact horizontal chip)
+struct SuggestedPairChip: View {
+    let pair: PlayerPair
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                // Optional small avatars (20px) for context
+                if let dataA = pair.playerA.avatarData, let uiA = UIImage(data: dataA) {
+                    Image(uiImage: uiA)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 28, height: 28)
+                        .clipShape(Circle())
+                }
+
+                Text("\(pair.playerA.name) vs \(pair.playerB.name)")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+
+                Spacer(minLength: 8)
+
+                Text(pair.count == 0 ? "New" : "\(pair.count)")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            .padding(.vertical, 10)
+            .padding(.horizontal, 14)
+            .background(
+                Capsule()
+                    .fill(SquashGColors.cardDark)
+            )
+            .overlay(
+                Capsule()
+                    .stroke(SquashGColors.backgroundDarker.opacity(0.06), lineWidth: 1)
+            )
+            .shadow(color: SquashGColors.neonCyan.opacity(0.06), radius: 6, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .frame(minWidth: 140)
+    }
+}
+
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = HomeViewModel()
@@ -189,18 +233,18 @@ struct HomeView: View {
                     .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 12) {
                         if viewModel.hasActiveMatch, let match = viewModel.activeMatch {
                             // Active Match State
                             ActiveMatchCard(match: match) {
                                 showScoreboard = true
                             }
                             .padding(.horizontal, 20)
-                            .padding(.top, 20)
+                            .padding(.top, 4)
                             .transition(.scale.combined(with: .opacity))
                         } else {
                             // No Active Match State
-                            VStack(spacing: 20) {
+                            VStack(spacing: 12) {
                                 // Player A
                                 PlayerCard(title: "Player A", player: viewModel.selectedPlayerA) {
                                     selectingPlayerSlot = "A"
@@ -223,15 +267,20 @@ struct HomeView: View {
                                             .foregroundColor(.white)
                                             .padding(.leading, 4)
 
-                                        ForEach(suggestedPairs) { pair in
-                                            SuggestedPairRow(pair: pair) {
-                                                withAnimation(.spring(response: 0.38, dampingFraction: 0.8)) {
-                                                    viewModel.selectedPlayerA = pair.playerA
-                                                    viewModel.selectedPlayerB = pair.playerB
+                                        ScrollView(.horizontal, showsIndicators: false) {
+                                            HStack(spacing: 12) {
+                                                ForEach(suggestedPairs) { pair in
+                                                    SuggestedPairChip(pair: pair) {
+                                                        withAnimation(.spring(response: 0.38, dampingFraction: 0.8)) {
+                                                            viewModel.selectedPlayerA = pair.playerA
+                                                            viewModel.selectedPlayerB = pair.playerB
+                                                        }
+                                                        HapticService.shared.selection()
+                                                    }
                                                 }
-                                                HapticService.shared.selection()
                                             }
-                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 4)
+                                            .padding(.leading, 4)
                                         }
                                     }
                                     .padding(.top, 10)
@@ -255,15 +304,15 @@ struct HomeView: View {
                                 )
                             }
                             .padding(.horizontal, 20)
-                            .padding(.top, 20)
+                            .padding(.top, 4)
                             .transition(.scale.combined(with: .opacity))
                         }
                     }
                     .padding(.bottom, 100)
                 }
             }
-            .centeredNavTitle("Play")
-            .navigationBarTitleDisplayMode(.large)
+            .centeredNavTitle("Select players")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { showSettings = true }) {
