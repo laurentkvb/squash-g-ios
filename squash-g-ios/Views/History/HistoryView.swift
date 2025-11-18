@@ -7,55 +7,64 @@ struct HistoryView: View {
     @State private var showManualSet = false
     @State private var selectedMatchForSheet: MatchRecord? = nil
     @State private var pendingDeleteMatch: MatchRecord? = nil
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
                 SquashGColors.appBackgroundGradient
                     .ignoresSafeArea()
-                
+
                 if matches.isEmpty {
-                    // Empty State
                     VStack(spacing: 16) {
                         Image(systemName: "clock.arrow.circlepath")
                             .font(.system(size: 60))
                             .foregroundColor(.white.opacity(0.3))
-                        
+
                         Text("No match history")
                             .font(.system(size: 18, weight: .medium))
                             .foregroundColor(.white.opacity(0.6))
-                        
+
                         Text("Start playing to track matches")
                             .font(.system(size: 14, weight: .regular))
                             .foregroundColor(.white.opacity(0.4))
                     }
                 } else {
-                    ScrollView(showsIndicators: true) {
-                        LazyVStack(spacing: 10, pinnedViews: []) {
-                            ForEach(matches) { match in
-                                NavigationLink(destination: MatchDetailView(match: match)) {
-                                    MatchRowView(match: match, highlightPlayer: nil)
+                    List {
+                        ForEach(matches) { match in
+                            Button {
+                                selectedMatchForSheet = match
+                            } label: {
+                                MatchRowView(match: match, highlightPlayer: nil)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .listRowInsets(EdgeInsets(top: 5, leading: 20, bottom: 5, trailing: 20))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    pendingDeleteMatch = match
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                        .foregroundStyle(.white)
                                 }
-                                .buttonStyle(PlainButtonStyle())
-                                .contextMenu {
-                                    Button(role: .destructive) {
-                                        pendingDeleteMatch = match
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
-
-                                    Button {
-                                        selectedMatchForSheet = match
-                                    } label: {
-                                        Label("View", systemImage: "eye")
-                                    }
+                                .tint(SquashGColors.neonPurple)
+                                
+                                Button {
+                                    selectedMatchForSheet = match
+                                } label: {
+                                    Label("View", systemImage: "eye")
+                                        .foregroundStyle(.white)
                                 }
+                                .tint(SquashGColors.neonCyan)
                             }
                         }
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 20)
                     }
-                    .ignoresSafeArea(edges: .bottom)
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    // Ensure content can scroll above the floating tab bar — add a safe-area inset
+                    .safeAreaInset(edge: .bottom) {
+                        Color.clear.frame(height: 140)
+                    }
                     .alert("Delete match?", isPresented: Binding(get: { pendingDeleteMatch != nil }, set: { if !$0 { pendingDeleteMatch = nil } })) {
                         Button("Delete", role: .destructive) {
                             if let m = pendingDeleteMatch {
@@ -70,8 +79,6 @@ struct HistoryView: View {
                         Text("This will permanently delete the match. This action cannot be undone.")
                     }
                 }
-                
-                // Add Manual Set moved to top-right toolbar
             }
             .centeredNavTitle("History")
             .navigationBarTitleDisplayMode(.large)
@@ -97,34 +104,25 @@ struct HistoryView: View {
     }
 
     private func deleteMatch(_ match: MatchRecord) {
-        Task { @MainActor in
-            modelContext.delete(match)
-            try? modelContext.save()
-        }
+        modelContext.delete(match)
     }
 }
 
+// MARK: - Match Row
 struct MatchRowView: View {
     let match: MatchRecord
     let highlightPlayer: Player?
 
-    var isPlayerAWinner: Bool {
-        match.scoreA > match.scoreB
-    }
-
-    var isPlayerBWinner: Bool {
-        match.scoreB > match.scoreA
-    }
+    private var isPlayerAWinner: Bool { match.scoreA > match.scoreB }
+    private var isPlayerBWinner: Bool { match.scoreB > match.scoreA }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            // Date
+        VStack(alignment: .leading, spacing: 8) {
             Text(match.date.formatted())
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white.opacity(0.4))
 
-            // Players and Score
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 // Player A
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
@@ -139,46 +137,31 @@ struct MatchRowView: View {
                         }
                     }
 
-                    // ELO Change
                     if match.eloChangeA != 0 {
                         Text(match.eloChangeA > 0 ? "+\(match.eloChangeA)" : "\(match.eloChangeA)")
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(match.eloChangeA > 0 ? .green : .red.opacity(0.7))
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                Spacer()
-
-                // Score
+                // Centered Score
                 HStack(spacing: 8) {
-                    AdaptiveText(
-                        text: "\(match.scoreA)",
-                        maxFontSize: 32,
-                        weight: .heavy,
-                        textColor: UIColor(isPlayerAWinner ? SquashGColors.neonCyan : .white.opacity(0.5)),
-                        minimumScaleFactor: 0.3,
-                        isMonospacedDigits: true
-                    )
-                    .scaleEffect(0.75)
+                    Text("\(match.scoreA)")
+                        .font(.system(size: 28, weight: .heavy))
+                        .foregroundColor(isPlayerAWinner ? SquashGColors.neonCyan : .white.opacity(0.5))
+                        .monospacedDigit()
 
                     Text("–")
                         .font(.system(size: 24, weight: .light))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
                         .foregroundColor(.white.opacity(0.3))
 
-                    AdaptiveText(
-                        text: "\(match.scoreB)",
-                        maxFontSize: 32,
-                        weight: .heavy,
-                        textColor: UIColor(isPlayerBWinner ? SquashGColors.neonCyan : .white.opacity(0.5)),
-                        minimumScaleFactor: 0.3,
-                        isMonospacedDigits: true
-                    )
-                    .scaleEffect(0.75)
+                    Text("\(match.scoreB)")
+                        .font(.system(size: 28, weight: .heavy))
+                        .foregroundColor(isPlayerBWinner ? SquashGColors.neonCyan : .white.opacity(0.5))
+                        .monospacedDigit()
                 }
-
-                Spacer()
+                .frame(minWidth: 100)
 
                 // Player B
                 VStack(alignment: .trailing, spacing: 2) {
@@ -194,16 +177,15 @@ struct MatchRowView: View {
                             .foregroundColor(.white)
                     }
 
-                    // ELO Change
                     if match.eloChangeB != 0 {
                         Text(match.eloChangeB > 0 ? "+\(match.eloChangeB)" : "\(match.eloChangeB)")
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(match.eloChangeB > 0 ? .green : .red.opacity(0.7))
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
 
-            // Notes
             if let notes = match.notes, !notes.isEmpty {
                 Text(notes)
                     .font(.system(size: 13, weight: .regular))

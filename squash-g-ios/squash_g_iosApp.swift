@@ -40,6 +40,7 @@ struct squash_g_iosApp: App {
                         .transition(.opacity)
                 }
             }
+            .preferredColorScheme(.dark)
         }
     }
 }

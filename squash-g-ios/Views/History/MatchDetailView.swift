@@ -36,7 +36,7 @@ struct MatchDetailView: View {
                     
                     // Score Card
                     VStack(spacing: 24) {
-                        HStack(spacing: 32) {
+                        HStack(alignment: .center, spacing: 32) {
                             // Player A
                             VStack(spacing: 12) {
                                 Text(match.playerA.name)
@@ -46,6 +46,7 @@ struct MatchDetailView: View {
                                 Text("\(match.scoreA)")
                                     .font(.system(size: 56, weight: .heavy))
                                     .foregroundColor(isPlayerAWinner ? SquashGColors.neonCyan : SquashGColors.textSecondary)
+                                    .monospacedDigit()
                                 
                                 if isPlayerAWinner {
                                     HStack(spacing: 6) {
@@ -55,6 +56,15 @@ struct MatchDetailView: View {
                                             .font(.system(size: 13, weight: .semibold))
                                     }
                                     .foregroundColor(SquashGColors.goldAccent)
+                                } else {
+                                    // Invisible spacer to keep alignment
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "crown.fill")
+                                            .font(.system(size: 14))
+                                        Text("Winner")
+                                            .font(.system(size: 13, weight: .semibold))
+                                    }
+                                    .foregroundColor(.clear)
                                 }
                             }
                             .frame(maxWidth: .infinity)
@@ -72,6 +82,7 @@ struct MatchDetailView: View {
                                 Text("\(match.scoreB)")
                                     .font(.system(size: 56, weight: .heavy))
                                     .foregroundColor(isPlayerBWinner ? SquashGColors.neonCyan : SquashGColors.textSecondary)
+                                    .monospacedDigit()
                                 
                                 if isPlayerBWinner {
                                     HStack(spacing: 6) {
@@ -81,6 +92,15 @@ struct MatchDetailView: View {
                                             .font(.system(size: 13, weight: .semibold))
                                     }
                                     .foregroundColor(SquashGColors.goldAccent)
+                                } else {
+                                    // Invisible spacer to keep alignment
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "crown.fill")
+                                            .font(.system(size: 14))
+                                        Text("Winner")
+                                            .font(.system(size: 13, weight: .semibold))
+                                    }
+                                    .foregroundColor(.clear)
                                 }
                             }
                             .frame(maxWidth: .infinity)
