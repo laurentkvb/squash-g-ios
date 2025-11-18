@@ -69,5 +69,22 @@ class HomeViewModel: ObservableObject {
                 self?.activeMatch = match
             }
             .store(in: &cancellables)
+
+        // Listen for cleared local data so we can reset any in-memory selections
+        NotificationCenter.default.addObserver(self, selector: #selector(handleLocalDataCleared), name: .didClearLocalData, object: nil)
+    }
+
+    @objc private func handleLocalDataCleared() {
+        Task { @MainActor in
+            // Clear in-memory selections
+            selectedPlayerA = nil
+            selectedPlayerB = nil
+            // Reset other transient UI state if desired
+            matchSettings = MatchSettings()
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .didClearLocalData, object: nil)
     }
 }

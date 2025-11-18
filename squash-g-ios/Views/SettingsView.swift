@@ -1,6 +1,11 @@
 import SwiftUI
 import SwiftData
 
+// Notification names for app-wide events
+extension Notification.Name {
+    static let didClearLocalData = Notification.Name("didClearLocalData")
+}
+
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -106,6 +111,10 @@ struct SettingsView: View {
                 for m in matches { modelContext.delete(m) }
             }
             try? modelContext.save()
+            // Notify the app that local data was cleared so in-memory state can reset
+            NotificationCenter.default.post(name: .didClearLocalData, object: nil)
+            // Also clear any persisted active match state
+            ActiveMatchService.shared.endMatch()
         }
     }
 }
