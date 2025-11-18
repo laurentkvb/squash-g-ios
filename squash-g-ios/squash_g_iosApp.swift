@@ -6,12 +6,38 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct squash_g_iosApp: App {
+    @State private var showMain = false
+    
+    var sharedModelContainer: ModelContainer = {
+        let schema = Schema([
+            Player.self,
+            MatchRecord.self
+        ])
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        
+        do {
+            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+        } catch {
+            fatalError("Could not create ModelContainer: \(error)")
+        }
+    }()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ZStack {
+                if showMain {
+                    MainTabView()
+                        .modelContainer(sharedModelContainer)
+                        .transition(.opacity)
+                } else {
+                    SplashScreenView(showMain: $showMain)
+                        .transition(.opacity)
+                }
+            }
         }
     }
 }

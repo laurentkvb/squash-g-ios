@@ -1,0 +1,101 @@
+import SwiftUI
+
+struct SettingsCard: View {
+    @Binding var targetScore: Int
+    @Binding var winByTwo: Bool
+    @Binding var tieBreakMode: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Match Settings")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white.opacity(0.5))
+            
+            // Target Score
+            HStack {
+                Text("Target Score")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(.white)
+                
+                Spacer()
+                
+                HStack(spacing: 12) {
+                    Button(action: {
+                        if targetScore > 1 {
+                            targetScore -= 1
+                            HapticService.shared.selection()
+                        }
+                    }) {
+                        Image(systemName: "minus")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(SquashGColors.neonTeal)
+                            .frame(width: 36, height: 36)
+                            .background(Circle().fill(Color.black.opacity(0.15)))
+                    }
+
+                    Text("\(targetScore)")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(SquashGColors.neonTeal)
+                        .frame(width: 40)
+
+                    Button(action: {
+                        targetScore += 1
+                        HapticService.shared.selection()
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(SquashGColors.neonTeal)
+                            .frame(width: 36, height: 36)
+                            .background(Circle().fill(Color.black.opacity(0.15)))
+                    }
+                }
+            }
+            
+            Divider()
+                .background(Color.white.opacity(0.06))
+            
+            // Win by Two
+            Toggle(isOn: $winByTwo) {
+                Text("Win by Two")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(.white)
+            }
+            .tint(SquashGColors.neonTeal)
+            .onChange(of: winByTwo) { _, _ in
+                HapticService.shared.selection()
+            }
+            
+            Divider()
+                .background(Color.white.opacity(0.06))
+            
+            // Tie-break Mode
+            Toggle(isOn: $tieBreakMode) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Tie-break Mode")
+                        .font(.system(size: 16, weight: .regular))
+                        .foregroundColor(.white)
+                    
+                    Text("Play to 15 points")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundColor(.white.opacity(0.5))
+                }
+            }
+            .tint(SquashGColors.neonTeal)
+            .onChange(of: tieBreakMode) { _, _ in
+                HapticService.shared.selection()
+            }
+        }
+        .padding(18)
+        .squashGCard()
+    }
+}
+
+#Preview {
+    SettingsCard(
+        targetScore: .constant(11),
+        winByTwo: .constant(true),
+        tieBreakMode: .constant(false)
+    )
+    .padding()
+    .background(SquashGColors.appBackgroundGradient)
+}
