@@ -30,6 +30,8 @@ struct squash_g_iosApp: App {
         WindowGroup {
             ZStack {
                 if showMain {
+                    // Always show the main tab view. MainTabView is responsible for
+                    // presenting onboarding when appropriate (initial run or explicit request).
                     MainTabView()
                         .modelContainer(sharedModelContainer)
                         .transition(.opacity)

@@ -7,6 +7,7 @@ struct HomeView: View {
     @State private var showScoreboard = false
     @State private var showPlayerSelector = false
     @State private var selectingPlayerSlot: String = "A" // "A" or "B"
+    @State private var showSettings = false
     
     var body: some View {
         NavigationStack {
@@ -66,6 +67,15 @@ struct HomeView: View {
             }
             .centeredNavTitle("Play")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { showSettings = true }) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.85))
+                    }
+                }
+            }
             .sheet(isPresented: $showPlayerSelector) {
                 PlayerSelectorView(
                     selectedPlayer: Binding(
@@ -96,6 +106,9 @@ struct HomeView: View {
             }
             .onAppear {
                 viewModel.loadPlayersForActiveMatch(modelContext: modelContext)
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
             }
         }
     }

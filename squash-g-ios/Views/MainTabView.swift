@@ -4,6 +4,17 @@ import SwiftData
 
 struct MainTabView: View {
     @AppStorage("selectedTabIndex") private var selectedTab = 0
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @AppStorage("presentOnboardingNow") private var presentOnboardingNow: Bool = false
+    
+    private var shouldShowOnboarding: Bool {
+        !hasSeenOnboarding || presentOnboardingNow
+    }
+    
+    private func completeOnboarding() {
+        hasSeenOnboarding = true
+        presentOnboardingNow = false
+    }
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -27,6 +38,17 @@ struct MainTabView: View {
         }
         .background(SquashGColors.appBackgroundGradient.ignoresSafeArea())
         .tint(SquashGColors.neonCyan)
+        .onChange(of: shouldShowOnboarding) { newValue in
+            if newValue {
+                // Trigger presentation when needed
+            }
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { shouldShowOnboarding },
+            set: { if !$0 { completeOnboarding() } }
+        )) {
+            OnboardingContainerView(onComplete: completeOnboarding)
+        }
     }
 }
 
