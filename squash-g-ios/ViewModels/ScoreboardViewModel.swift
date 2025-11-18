@@ -26,6 +26,9 @@ class ScoreboardViewModel: ObservableObject {
                 self?.objectWillChange.send()
             }
             .store(in: &cancellables)
+        // If the match already contains a winning score (e.g. restored from persistence),
+        // detect and surface the winner immediately so UI can present the summary.
+        checkForWinner()
     }
     
     var canUndo: Bool {

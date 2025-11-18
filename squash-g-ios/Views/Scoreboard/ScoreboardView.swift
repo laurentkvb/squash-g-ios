@@ -135,6 +135,13 @@ struct ScoreboardView: View {
             
             // no confetti here — celebration moved to WinnerView
         }
+        .onAppear {
+            // Ensure local presentation state matches the view model's state
+            // (handles the case where the restored match was already finished)
+            if viewModel.showWinnerScreen {
+                showWinnerSheet = true
+            }
+        }
         .confirmationDialog("End Match?", isPresented: $showEndConfirmation) {
             Button("End & Save Match", role: .destructive) {
                 viewModel.endAndSaveMatch(modelContext: modelContext)
