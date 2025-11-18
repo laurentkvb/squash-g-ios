@@ -11,15 +11,13 @@ class HomeViewModel: ObservableObject {
     @Published var matchSettings = MatchSettings()
     @Published var showPlayerASelector = false
     @Published var showPlayerBSelector = false
+    @Published var activeMatch: ActiveMatch?
     
     private let activeMatchService = ActiveMatchService.shared
+    private var cancellables = Set<AnyCancellable>()
     
     var hasActiveMatch: Bool {
-        activeMatchService.activeMatch != nil
-    }
-    
-    var activeMatch: ActiveMatch? {
-        activeMatchService.activeMatch
+        activeMatch != nil
     }
     
     var canStartMatch: Bool {
@@ -60,5 +58,16 @@ class HomeViewModel: ObservableObject {
         
         selectedPlayerA = try? modelContext.fetch(descriptorA).first
         selectedPlayerB = try? modelContext.fetch(descriptorB).first
+    }
+
+    init() {
+        // keep local activeMatch in sync with the service so views observing this view model update
+        activeMatch = activeMatchService.activeMatch
+        activeMatchService.$activeMatch
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] match in
+                self?.activeMatch = match
+            }
+            .store(in: &cancellables)
     }
 }

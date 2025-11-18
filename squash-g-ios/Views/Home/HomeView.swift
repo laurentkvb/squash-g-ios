@@ -88,6 +88,12 @@ struct HomeView: View {
                     ScoreboardView(match: match)
                 }
             }
+            .onChange(of: viewModel.activeMatch != nil) { hasMatch in
+                // If the active match disappears (cancelled or ended elsewhere), dismiss the scoreboard if it's open
+                if !hasMatch {
+                    showScoreboard = false
+                }
+            }
             .onAppear {
                 viewModel.loadPlayersForActiveMatch(modelContext: modelContext)
             }

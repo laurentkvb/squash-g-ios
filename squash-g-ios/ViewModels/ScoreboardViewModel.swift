@@ -14,10 +14,18 @@ class ScoreboardViewModel: ObservableObject {
     
     private let activeMatchService = ActiveMatchService.shared
     let timerService = TimerService()
+    private var cancellables = Set<AnyCancellable>()
     
     init(match: ActiveMatch) {
         self.match = match
         timerService.start(from: match.startDate)
+        // Forward timerService updates so views observing this view model refresh
+        timerService.objectWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
     }
     
     var canUndo: Bool {

@@ -6,7 +6,7 @@ struct ScoreboardView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel: ScoreboardViewModel
     @State private var showEndConfirmation = false
-    @State private var showConfetti = false
+    @State private var showWinnerSheet = false
     
     init(match: ActiveMatch) {
         _viewModel = StateObject(wrappedValue: ScoreboardViewModel(match: match))
@@ -67,9 +67,15 @@ struct ScoreboardView: View {
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.5)
                             
-                            Text("\(viewModel.match.scoreA)")
-                                .font(.system(size: 72, weight: .heavy))
-                                .foregroundColor(SquashGColors.neonCyan)
+                                AdaptiveText(
+                                    text: "\(viewModel.match.scoreA)",
+                                    maxFontSize: 72,
+                                    weight: .heavy,
+                                    textColor: UIColor(SquashGColors.neonCyan),
+                                    minimumScaleFactor: 0.35,
+                                    isMonospacedDigits: true
+                                )
+                                .scaleEffect(0.8)
                                 .shadow(color: SquashGColors.neonCyan.opacity(0.6), radius: 20)
                         }
                         .frame(maxWidth: .infinity)
@@ -87,10 +93,16 @@ struct ScoreboardView: View {
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.5)
                             
-                            Text("\(viewModel.match.scoreB)")
-                                .font(.system(size: 72, weight: .heavy))
-                                .foregroundColor(SquashGColors.neonCyan)
-                                .shadow(color: SquashGColors.neonCyan.opacity(0.6), radius: 20)
+                            AdaptiveText(
+                                text: "\(viewModel.match.scoreB)",
+                                maxFontSize: 72,
+                                weight: .heavy,
+                                textColor: UIColor(SquashGColors.neonPurple),
+                                minimumScaleFactor: 0.35,
+                                isMonospacedDigits: true
+                            )
+                            .scaleEffect(0.8)
+                            .shadow(color: SquashGColors.neonPurple.opacity(0.6), radius: 20)
                         }
                         .frame(maxWidth: .infinity)
                     }
@@ -111,7 +123,7 @@ struct ScoreboardView: View {
                         // Player B Button
                         ScoreButton(
                             playerName: viewModel.match.playerBName,
-                            color: SquashGColors.neonCyan
+                            color: SquashGColors.neonPurple
                         ) {
                             viewModel.addPointToPlayerB()
                         }
@@ -121,11 +133,7 @@ struct ScoreboardView: View {
                 }
             }
             
-            // Confetti
-            if showConfetti {
-                ConfettiView()
-                    .allowsHitTesting(false)
-            }
+            // no confetti here — celebration moved to WinnerView
         }
         .confirmationDialog("End Match?", isPresented: $showEndConfirmation) {
             Button("End & Save Match", role: .destructive) {
@@ -134,7 +142,7 @@ struct ScoreboardView: View {
             }
             Button("Cancel", role: .cancel) {}
         }
-        .sheet(isPresented: $viewModel.showWinnerScreen) {
+        .sheet(isPresented: $showWinnerSheet) {
             WinnerView(
                 winnerName: viewModel.winnerName ?? "",
                 scoreA: viewModel.match.scoreA,
@@ -145,15 +153,16 @@ struct ScoreboardView: View {
                 eloChangeB: viewModel.eloChangeB,
                 onDone: {
                     viewModel.showWinnerScreen = false
+                    showWinnerSheet = false
                     viewModel.endAndSaveMatch(modelContext: modelContext)
                     dismiss()
                 },
                 onRematch: {
-                    viewModel.showWinnerScreen = false
-                    let newMatch = viewModel.rematch()
+                    // End & save the finished match
                     viewModel.endAndSaveMatch(modelContext: modelContext)
-                    
-                    // Start new match
+
+                    // Prepare a fresh rematch and start it globally
+                    let newMatch = viewModel.rematch()
                     ActiveMatchService.shared.startMatch(
                         playerAId: newMatch.playerAId,
                         playerBId: newMatch.playerBId,
@@ -161,23 +170,35 @@ struct ScoreboardView: View {
                         playerBName: newMatch.playerBName,
                         settings: newMatch.settings
                     )
-                    
+
                     LiveActivityService.shared.startActivity(
                         playerAName: newMatch.playerAName,
                         playerBName: newMatch.playerBName,
-                        startDate: Date()
+                        startDate: newMatch.startDate
                     )
-                    
-                    dismiss()
+
+                    // Keep the user on the scoreboard: update the current view model to the new match
+                    viewModel.match = newMatch
+                    viewModel.timerService.stop()
+                    viewModel.timerService.start(from: newMatch.startDate)
+
+                    // Close the winner sheet but do NOT dismiss the Scoreboard view — user stays on the live scoreboard
+                    viewModel.showWinnerScreen = false
+                    showWinnerSheet = false
                 }
             )
+            // Lock the sheet to a single detent and disable interactive dismissal so it cannot be dragged down
+            .presentationDetents([.large])
+            .presentationDragIndicator(.hidden)
+            .interactiveDismissDisabled(true)
         }
         .onChange(of: viewModel.showWinnerScreen) { _, newValue in
             if newValue {
-                showConfetti = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    showConfetti = false
-                }
+                // Present the winner sheet immediately; confetti will play inside WinnerView
+                showWinnerSheet = true
+            } else {
+                // Dismiss local sheet if view model cleared
+                showWinnerSheet = false
             }
         }
     }

@@ -23,9 +23,14 @@ struct ActiveMatchCard: View {
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
                         
-                        Text("\(match.scoreA)")
-                            .font(.system(size: 48, weight: .heavy))
-                            .foregroundColor(SquashGColors.neonCyan)
+                        AdaptiveText(
+                            text: "\(match.scoreA)",
+                            maxFontSize: 36,
+                            weight: .heavy,
+                            textColor: UIColor(SquashGColors.neonCyan),
+                            minimumScaleFactor: 0.3,
+                            isMonospacedDigits: true
+                        )
                     }
                     
                     Spacer()
@@ -41,9 +46,14 @@ struct ActiveMatchCard: View {
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
                         
-                        Text("\(match.scoreB)")
-                            .font(.system(size: 48, weight: .heavy))
-                            .foregroundColor(SquashGColors.neonCyan)
+                        AdaptiveText(
+                            text: "\(match.scoreB)",
+                            maxFontSize: 36,
+                            weight: .heavy,
+                            textColor: UIColor(SquashGColors.neonCyan),
+                            minimumScaleFactor: 0.3,
+                            isMonospacedDigits: true
+                        )
                     }
                 }
                 

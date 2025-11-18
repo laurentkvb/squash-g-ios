@@ -112,17 +112,31 @@ struct MatchRowView: View {
                 
                 // Score
                 HStack(spacing: 12) {
-                    Text("\(match.scoreA)")
-                        .font(.system(size: 32, weight: .heavy))
-                        .foregroundColor(isPlayerAWinner ? SquashGColors.neonCyan : .white.opacity(0.5))
-                    
+                    AdaptiveText(
+                        text: "\(match.scoreA)",
+                        maxFontSize: 32,
+                        weight: .heavy,
+                        textColor: UIColor(isPlayerAWinner ? SquashGColors.neonCyan : .white.opacity(0.5)),
+                        minimumScaleFactor: 0.3,
+                        isMonospacedDigits: true
+                    )
+                    .scaleEffect(0.75)
+
                     Text("–")
                         .font(.system(size: 24, weight: .light))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                         .foregroundColor(.white.opacity(0.3))
-                    
-                    Text("\(match.scoreB)")
-                        .font(.system(size: 32, weight: .heavy))
-                        .foregroundColor(isPlayerBWinner ? SquashGColors.neonCyan : .white.opacity(0.5))
+
+                    AdaptiveText(
+                        text: "\(match.scoreB)",
+                        maxFontSize: 32,
+                        weight: .heavy,
+                        textColor: UIColor(isPlayerBWinner ? SquashGColors.neonCyan : .white.opacity(0.5)),
+                        minimumScaleFactor: 0.3,
+                        isMonospacedDigits: true
+                    )
+                    .scaleEffect(0.75)
                 }
                 
                 Spacer()

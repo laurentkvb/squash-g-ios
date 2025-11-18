@@ -11,6 +11,9 @@ struct SquashGColors {
     static let neonCyan         = Color(hex: "00D1FF")
     static let neonTeal         = Color(hex: "00E3CC")
     static let neonPink         = Color(hex: "FF00CC")   // CTA + logo ball
+    // Additional player accent colors
+    static let neonBlue         = Color(hex: "4DA6FF")   // left player accent (bright blue)
+    static let neonPurple       = Color(hex: "C200FF")   // right player accent (purple)
     static let goldAccent       = Color(hex: "FFC83D")   // toggles, steppers
 
     static let textPrimary      = Color.white

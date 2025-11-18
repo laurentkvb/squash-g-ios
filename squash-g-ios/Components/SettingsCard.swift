@@ -59,6 +59,9 @@ struct SettingsCard: View {
                 Text("Win by Two")
                     .font(.system(size: 16, weight: .regular))
                     .foregroundColor(.white)
+                Text("Atleast 2 points difference is needed to win")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(.white.opacity(0.5))
             }
             .tint(SquashGColors.neonTeal)
             .onChange(of: winByTwo) { _, _ in
