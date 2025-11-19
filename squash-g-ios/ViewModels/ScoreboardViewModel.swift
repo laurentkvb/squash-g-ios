@@ -8,9 +8,8 @@ import Combine
 class ScoreboardViewModel: ObservableObject {
     @Published var match: ActiveMatch
     @Published var showWinnerScreen = false
-    @Published var showSetWinBanner = false
-    @Published var setWinnerName: String?
-    @Published var completedSetNumber: Int?
+    @Published var showSetSummarySheet = false
+    @Published var completedSetForSummary: ActiveMatch.SetScore?
     @Published var winnerName: String?
     @Published var eloChangeA: Int = 0
     @Published var eloChangeB: Int = 0
@@ -81,6 +80,11 @@ class ScoreboardViewModel: ObservableObject {
             match.completeSet(winner: setWinner)
             activeMatchService.updateMatch(match)
             
+            // Get the just-completed set for the summary
+            if let lastCompletedSet = match.completedSets.last {
+                completedSetForSummary = lastCompletedSet
+            }
+            
             // Check if match is complete
             let matchResult = match.hasMatchWinner()
             if matchResult.hasWinner {
@@ -89,18 +93,9 @@ class ScoreboardViewModel: ObservableObject {
                 showWinnerScreen = true
                 HapticService.shared.success()
             } else {
-                // Show set win banner and continue to next set
-                setWinnerName = setWinner == "A" ? match.playerAName : match.playerBName
-                completedSetNumber = match.currentSetNumber - 1
-                showSetWinBanner = true
+                // Show set summary sheet for the completed set
+                showSetSummarySheet = true
                 HapticService.shared.medium()
-                
-                // Auto-dismiss banner after 2.5 seconds
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
-                    withAnimation {
-                        self?.showSetWinBanner = false
-                    }
-                }
             }
         }
     }

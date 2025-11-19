@@ -7,6 +7,7 @@ struct ScoreboardView: View {
     @StateObject private var viewModel: ScoreboardViewModel
     @State private var showEndConfirmation = false
     @State private var showWinnerSheet = false
+    @State private var showSetSummarySheet = false
     
     init(match: ActiveMatch) {
         _viewModel = StateObject(wrappedValue: ScoreboardViewModel(match: match))
@@ -180,38 +181,6 @@ struct ScoreboardView: View {
                     .padding(.bottom, 40)
                 }
             }
-            
-            // Set Win Banner
-            if viewModel.showSetWinBanner, let winnerName = viewModel.setWinnerName, let setNumber = viewModel.completedSetNumber {
-                VStack {
-                    Spacer()
-                    
-                    VStack(spacing: 12) {
-                        Text("\(winnerName) wins")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(.white)
-                        
-                        Text("Set \(setNumber)")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(SquashGColors.neonCyan)
-                    }
-                    .padding(.vertical, 24)
-                    .padding(.horizontal, 40)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.black.opacity(0.9))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(SquashGColors.neonCyan, lineWidth: 2)
-                            )
-                            .shadow(color: SquashGColors.neonCyan.opacity(0.5), radius: 20)
-                    )
-                    .transition(.scale.combined(with: .opacity))
-                    
-                    Spacer()
-                }
-                .zIndex(10)
-            }
         }
         .onAppear {
             // Ensure local presentation state matches the view model's state
@@ -276,6 +245,30 @@ struct ScoreboardView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.hidden)
             .interactiveDismissDisabled(true)
+        }
+        .sheet(isPresented: $showSetSummarySheet) {
+            if let completedSet = viewModel.completedSetForSummary {
+                SetSummaryView(
+                    setNumber: completedSet.setNumber,
+                    winnerName: completedSet.winner == "A" ? viewModel.match.playerAName : viewModel.match.playerBName,
+                    loserName: completedSet.winner == "A" ? viewModel.match.playerBName : viewModel.match.playerAName,
+                    scoreA: completedSet.scoreA,
+                    scoreB: completedSet.scoreB,
+                    pointHistory: completedSet.pointHistory,
+                    playerAName: viewModel.match.playerAName,
+                    playerBName: viewModel.match.playerBName,
+                    onContinue: {
+                        viewModel.showSetSummarySheet = false
+                        showSetSummarySheet = false
+                    }
+                )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
+                .interactiveDismissDisabled(true)
+            }
+        }
+        .onChange(of: viewModel.showSetSummarySheet) { _, newValue in
+            showSetSummarySheet = newValue
         }
         .onChange(of: viewModel.showWinnerScreen) { _, newValue in
             if newValue {
