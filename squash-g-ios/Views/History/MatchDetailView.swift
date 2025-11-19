@@ -27,10 +27,26 @@ struct MatchDetailView: View {
                         Text("Match Date")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(.white.opacity(0.6))
-                        
-                        Text(match.date.formatted())
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.white)
+
+                        HStack(spacing: 8) {
+                            Text(match.date.formatted())
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+
+                            Spacer()
+
+                            if match.duration > 0 {
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text("Duration")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.6))
+
+                                    Text(TimeInterval(match.duration).toDurationString())
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.white)
+                                }
+                            }
+                        }
                     }
                     .padding(.top, 20)
                     

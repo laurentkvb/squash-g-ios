@@ -12,6 +12,7 @@ class MatchRecord {
     var notes: String?
     var eloChangeA: Int
     var eloChangeB: Int
+    var duration: TimeInterval = 0
     
     // Computed property
     @Transient
@@ -32,7 +33,8 @@ class MatchRecord {
          date: Date = .now,
          notes: String? = nil,
          eloChangeA: Int = 0,
-         eloChangeB: Int = 0) {
+         eloChangeB: Int = 0,
+         duration: TimeInterval = 0) {
         self.id = id
         self.playerA = playerA
         self.playerB = playerB
@@ -42,5 +44,6 @@ class MatchRecord {
         self.notes = notes
         self.eloChangeA = eloChangeA
         self.eloChangeB = eloChangeB
+        self.duration = duration
     }
 }

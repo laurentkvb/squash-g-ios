@@ -108,14 +108,18 @@ class ScoreboardViewModel: ObservableObject {
         eloChangeB = eloResult.changeB
         
         // Create match record
+        let duration = Date().timeIntervalSince(match.startDate)
+
         let matchRecord = MatchRecord(
             playerA: playerA,
             playerB: playerB,
             scoreA: match.scoreA,
             scoreB: match.scoreB,
             date: match.startDate,
+            notes: nil,
             eloChangeA: eloResult.changeA,
-            eloChangeB: eloResult.changeB
+            eloChangeB: eloResult.changeB,
+            duration: duration
         )
         
         modelContext.insert(matchRecord)

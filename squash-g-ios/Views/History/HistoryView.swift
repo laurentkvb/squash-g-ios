@@ -118,9 +118,23 @@ struct MatchRowView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(match.date.formatted())
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.white.opacity(0.4))
+            HStack {
+                Text(match.date.formatted())
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.white.opacity(0.4))
+
+                Spacer()
+
+                // Duration
+                if match.duration > 0 {
+                    Text(TimeInterval(match.duration).toDurationString())
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
+                        .background(Capsule().fill(Color.white.opacity(0.04)))
+                }
+            }
 
             HStack(spacing: 8) {
                 // Player A
