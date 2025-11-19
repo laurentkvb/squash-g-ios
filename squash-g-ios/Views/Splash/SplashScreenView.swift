@@ -8,7 +8,7 @@ struct SplashScreenView: View {
     // no image asset is available so the view falls back to a text title.
     static func loadLogoImage() -> UIImage? {
         // Common asset name fallbacks — harmless if they don't exist.
-        let candidates = ["AppIcon", "AppIcon60x60", "squash_icon", "squash_logo", "Logo"]
+        let candidates = ["SplashIcon", "AppIcon", "AppIcon60x60", "squash_icon", "squash_logo", "Logo"]
         for name in candidates {
             if let img = UIImage(named: name) {
                 return img
@@ -29,12 +29,12 @@ struct SplashScreenView: View {
     @State private var rotation: Double = 0
     @State private var glowScale: CGFloat = 0.8
     @Binding var showMain: Bool
-    
+
     var body: some View {
         ZStack {
             SquashGColors.appBackgroundGradient
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 16) {
                 if let uiLogo = SplashScreenView.loadLogoImage() {
                     VStack(spacing: 10) {
@@ -83,7 +83,7 @@ struct SplashScreenView: View {
         }
         .onAppear {
             HapticService.shared.light()
-            
+
             // Fade in and primary scale/rotation animation
             withAnimation(.spring(response: 0.7, dampingFraction: 0.8)) {
                 opacity = 1
@@ -102,7 +102,7 @@ struct SplashScreenView: View {
                 rotation = 6
                 glowScale = 1.08
             }
-            
+
             // Fade out and transition to main
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                 withAnimation(.easeOut(duration: 0.6)) {
@@ -110,7 +110,7 @@ struct SplashScreenView: View {
                     glowScale = 0.9
                     rotation = 0
                 }
-                
+
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                     showMain = true
                 }
