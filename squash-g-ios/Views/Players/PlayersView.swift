@@ -13,24 +13,42 @@ struct PlayersView: View {
                 SquashGColors.appBackgroundGradient
                     .ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(spacing: 12) {
-                        ForEach(players) { player in
-                            NavigationLink(destination: PlayerDetailView(
-                                player: player,
-                                stats: viewModel.playerStats(for: player, modelContext: modelContext)
-                            )) {
-                                PlayerRowView(
+                if players.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "person.3.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.white.opacity(0.3))
+
+                        Text("No players yet")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.white.opacity(0.6))
+
+                        Text("Add your first player to start tracking matches")
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(.white.opacity(0.4))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                    }
+                } else {
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            ForEach(players) { player in
+                                NavigationLink(destination: PlayerDetailView(
                                     player: player,
                                     stats: viewModel.playerStats(for: player, modelContext: modelContext)
-                                )
+                                )) {
+                                    PlayerRowView(
+                                        player: player,
+                                        stats: viewModel.playerStats(for: player, modelContext: modelContext)
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
-                            .buttonStyle(PlainButtonStyle())
+                            .onDelete(perform: deletePlayers)
                         }
-                        .onDelete(perform: deletePlayers)
+                        .padding(20)
+                        .padding(.bottom, 100)
                     }
-                    .padding(20)
-                    .padding(.bottom, 100)
                 }
                 
                 // Add Player moved to top-right toolbar

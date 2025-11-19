@@ -10,13 +10,44 @@ struct ActiveMatchCard: View {
             action()
         }) {
             VStack(spacing: 18) {
-                // Title
-                Text("Active Match")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.white.opacity(0.5))
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                // Title with Match Mode
+                HStack {
+                    Text("Active Match")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.white.opacity(0.5))
+                    
+                    Spacer()
+                    
+                    Text(match.settings.matchMode.rawValue)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(SquashGColors.neonCyan)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(SquashGColors.neonCyan.opacity(0.15))
+                        )
+                }
                 
-                // Players and Score
+                // Current Set Info
+                if match.settings.matchMode != .bestOf1 {
+                    HStack {
+                        Text("Set \(match.currentSetNumber) of \(match.settings.matchMode.totalSets)")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.white.opacity(0.6))
+                        
+                        Spacer()
+                        
+                        HStack(spacing: 6) {
+                            Text("Sets: \(match.setsWonA) – \(match.setsWonB)")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.7))
+                                .monospacedDigit()
+                        }
+                    }
+                }
+                
+                // Players and Current Set Score
                 HStack(spacing: 20) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(match.playerAName)
@@ -102,7 +133,11 @@ struct ActiveMatchCard: View {
             scoreB: 6,
             startDate: Date().addingTimeInterval(-300),
             settings: MatchSettings(),
-            scoreHistory: []
+            scoreHistory: [],
+            setsWonA: 1,
+            setsWonB: 0,
+            completedSets: [],
+            currentSetNumber: 2
         )
     ) {
         print("Continue Match")

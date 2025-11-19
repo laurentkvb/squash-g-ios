@@ -56,7 +56,10 @@ class ManualSetViewModel: ObservableObject {
             date: matchDate,
             notes: notes.isEmpty ? nil : notes,
             eloChangeA: eloResult.changeA,
-            eloChangeB: eloResult.changeB
+            eloChangeB: eloResult.changeB,
+            duration: 0,
+            matchMode: .bestOf1,
+            setScores: []
         )
         
         modelContext.insert(matchRecord)

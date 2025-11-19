@@ -124,15 +124,32 @@ struct MatchRowView: View {
                     .foregroundColor(.white.opacity(0.4))
 
                 Spacer()
+                
+                // Match Mode Badge
+                if let mode = MatchMode(rawValue: match.matchMode), mode != .bestOf1 {
+                    Text(mode.rawValue)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(SquashGColors.neonCyan)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(SquashGColors.neonCyan.opacity(0.15))
+                        )
+                }
 
                 // Duration
                 if match.duration > 0 {
-                    Text(TimeInterval(match.duration).toDurationString())
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.7))
-                        .padding(.vertical, 4)
-                        .padding(.horizontal, 8)
-                        .background(Capsule().fill(Color.white.opacity(0.04)))
+                    HStack(spacing: 4) {
+                        Image(systemName: "clock.fill")
+                            .font(.system(size: 10))
+                        Text(TimeInterval(match.duration).toDurationString())
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .foregroundColor(.white.opacity(0.7))
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 8)
+                    .background(Capsule().fill(Color.white.opacity(0.04)))
                 }
             }
 
@@ -198,6 +215,32 @@ struct MatchRowView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+
+            // Set Scores (for multi-set matches)
+            if !match.setScores.isEmpty {
+                HStack(spacing: 6) {
+                    ForEach(match.setScores) { setScore in
+                        HStack(spacing: 3) {
+                            Text("\(setScore.scoreA)")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(setScore.winner == "A" ? SquashGColors.neonCyan : .white.opacity(0.4))
+                            Text("-")
+                                .font(.system(size: 10, weight: .light))
+                                .foregroundColor(.white.opacity(0.3))
+                            Text("\(setScore.scoreB)")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(setScore.winner == "B" ? SquashGColors.neonCyan : .white.opacity(0.4))
+                        }
+                        .monospacedDigit()
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.white.opacity(0.03))
+                        )
+                    }
+                }
             }
 
             if let notes = match.notes, !notes.isEmpty {

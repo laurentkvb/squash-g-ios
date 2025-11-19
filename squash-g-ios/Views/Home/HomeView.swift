@@ -225,13 +225,13 @@ struct HomeView: View {
     @State private var showPlayerSelector = false
     @State private var selectingPlayerSlot: String = "A" // "A" or "B"
     @State private var showSettings = false
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
                 SquashGColors.appBackgroundGradient
                     .ignoresSafeArea()
-                
+
                 ScrollView {
                     VStack(spacing: 12) {
                         if viewModel.hasActiveMatch, let match = viewModel.activeMatch {
@@ -250,7 +250,7 @@ struct HomeView: View {
                                     selectingPlayerSlot = "A"
                                     showPlayerSelector = true
                                 }
-                                
+
                                 // Player B
                                 PlayerCard(title: "Player B", player: viewModel.selectedPlayerB) {
                                     selectingPlayerSlot = "B"
@@ -288,14 +288,15 @@ struct HomeView: View {
 
                                 // Match Settings
                                 SettingsCard(
+                                    matchMode: $viewModel.matchSettings.matchMode,
                                     targetScore: $viewModel.matchSettings.targetScore,
                                     winByTwo: $viewModel.matchSettings.winByTwo,
                                     tieBreakMode: $viewModel.matchSettings.tieBreakMode
                                 )
-                                
+
                                 // Start Button
                                 PrimaryButton(
-                                    title: "Start Set",
+                                    title: "Start Match",
                                     action: {
                                         viewModel.startMatch()
                                         showScoreboard = true

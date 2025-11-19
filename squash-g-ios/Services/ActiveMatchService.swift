@@ -23,7 +23,11 @@ class ActiveMatchService: ObservableObject {
             scoreB: 0,
             startDate: Date(),
             settings: settings,
-            scoreHistory: []
+            scoreHistory: [],
+            setsWonA: 0,
+            setsWonB: 0,
+            completedSets: [],
+            currentSetNumber: 1
         )
         activeMatch = match
         saveActiveMatch()

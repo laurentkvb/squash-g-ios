@@ -8,6 +8,9 @@ import Combine
 class ScoreboardViewModel: ObservableObject {
     @Published var match: ActiveMatch
     @Published var showWinnerScreen = false
+    @Published var showSetWinBanner = false
+    @Published var setWinnerName: String?
+    @Published var completedSetNumber: Int?
     @Published var winnerName: String?
     @Published var eloChangeA: Int = 0
     @Published var eloChangeB: Int = 0
@@ -69,11 +72,36 @@ class ScoreboardViewModel: ObservableObject {
     }
     
     private func checkForWinner() {
+        // Check if current set has a winner
         let result = match.settings.checkWinner(scoreA: match.scoreA, scoreB: match.scoreB)
         if result.hasWinner {
-            winnerName = result.winner == "A" ? match.playerAName : match.playerBName
-            showWinnerScreen = true
-            HapticService.shared.success()
+            let setWinner = result.winner ?? "A"
+            
+            // Complete the current set
+            match.completeSet(winner: setWinner)
+            activeMatchService.updateMatch(match)
+            
+            // Check if match is complete
+            let matchResult = match.hasMatchWinner()
+            if matchResult.hasWinner {
+                // Match is complete
+                winnerName = matchResult.winner == "A" ? match.playerAName : match.playerBName
+                showWinnerScreen = true
+                HapticService.shared.success()
+            } else {
+                // Show set win banner and continue to next set
+                setWinnerName = setWinner == "A" ? match.playerAName : match.playerBName
+                completedSetNumber = match.currentSetNumber - 1
+                showSetWinBanner = true
+                HapticService.shared.medium()
+                
+                // Auto-dismiss banner after 2.5 seconds
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
+                    withAnimation {
+                        self?.showSetWinBanner = false
+                    }
+                }
+            }
         }
     }
     
@@ -109,17 +137,32 @@ class ScoreboardViewModel: ObservableObject {
         
         // Create match record
         let duration = Date().timeIntervalSince(match.startDate)
+        
+        // Convert set scores to SetScoreRecord
+        let setScoreRecords = match.completedSets.map { set in
+            SetScoreRecord(
+                setNumber: set.setNumber,
+                scoreA: set.scoreA,
+                scoreB: set.scoreB,
+                winner: set.winner,
+                pointHistory: set.pointHistory.map { point in
+                    PointRecord(scoreA: point.scoreA, scoreB: point.scoreB, timestamp: point.timestamp)
+                }
+            )
+        }
 
         let matchRecord = MatchRecord(
             playerA: playerA,
             playerB: playerB,
-            scoreA: match.scoreA,
-            scoreB: match.scoreB,
+            scoreA: match.setsWonA,
+            scoreB: match.setsWonB,
             date: match.startDate,
             notes: nil,
             eloChangeA: eloResult.changeA,
             eloChangeB: eloResult.changeB,
-            duration: duration
+            duration: duration,
+            matchMode: match.settings.matchMode,
+            setScores: setScoreRecords
         )
         
         modelContext.insert(matchRecord)
@@ -147,7 +190,11 @@ class ScoreboardViewModel: ObservableObject {
             scoreB: 0,
             startDate: Date(),
             settings: match.settings,
-            scoreHistory: []
+            scoreHistory: [],
+            setsWonA: 0,
+            setsWonB: 0,
+            completedSets: [],
+            currentSetNumber: 1
         )
     }
 }

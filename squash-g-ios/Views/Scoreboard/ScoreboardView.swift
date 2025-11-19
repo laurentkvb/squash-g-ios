@@ -55,6 +55,54 @@ struct ScoreboardView: View {
                     .padding(.horizontal, 24)
                     .padding(.vertical, 16)
                     
+                    // Match Info (Mode, Set, Set Score)
+                    VStack(spacing: 8) {
+                        // Match Mode
+                        Text(viewModel.match.settings.matchMode.rawValue)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.5))
+                        
+                        // Current Set
+                        Text("Set \(viewModel.match.currentSetNumber) of \(viewModel.match.settings.matchMode.totalSets)")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.4))
+                        
+                        // Set Score Summary
+                        if viewModel.match.settings.matchMode != .bestOf1 {
+                            HStack(spacing: 8) {
+                                Text(viewModel.match.playerAName)
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.6))
+                                
+                                HStack(spacing: 4) {
+                                    Text("\(viewModel.match.setsWonA)")
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundColor(SquashGColors.neonCyan)
+                                    
+                                    Text("–")
+                                        .font(.system(size: 12, weight: .light))
+                                        .foregroundColor(.white.opacity(0.3))
+                                    
+                                    Text("\(viewModel.match.setsWonB)")
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundColor(SquashGColors.neonPurple)
+                                }
+                                .monospacedDigit()
+                                
+                                Text(viewModel.match.playerBName)
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.6))
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(Color.white.opacity(0.05))
+                            )
+                        }
+                    }
+                    .padding(.bottom, 20)
+                    
                     Spacer()
                     
                     // Center Score Display
@@ -133,7 +181,37 @@ struct ScoreboardView: View {
                 }
             }
             
-            // no confetti here — celebration moved to WinnerView
+            // Set Win Banner
+            if viewModel.showSetWinBanner, let winnerName = viewModel.setWinnerName, let setNumber = viewModel.completedSetNumber {
+                VStack {
+                    Spacer()
+                    
+                    VStack(spacing: 12) {
+                        Text("\(winnerName) wins")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.white)
+                        
+                        Text("Set \(setNumber)")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(SquashGColors.neonCyan)
+                    }
+                    .padding(.vertical, 24)
+                    .padding(.horizontal, 40)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.black.opacity(0.9))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(SquashGColors.neonCyan, lineWidth: 2)
+                            )
+                            .shadow(color: SquashGColors.neonCyan.opacity(0.5), radius: 20)
+                    )
+                    .transition(.scale.combined(with: .opacity))
+                    
+                    Spacer()
+                }
+                .zIndex(10)
+            }
         }
         .onAppear {
             // Ensure local presentation state matches the view model's state
@@ -152,8 +230,8 @@ struct ScoreboardView: View {
         .sheet(isPresented: $showWinnerSheet) {
             WinnerView(
                 winnerName: viewModel.winnerName ?? "",
-                scoreA: viewModel.match.scoreA,
-                scoreB: viewModel.match.scoreB,
+                scoreA: viewModel.match.setsWonA,
+                scoreB: viewModel.match.setsWonB,
                 playerAName: viewModel.match.playerAName,
                 playerBName: viewModel.match.playerBName,
                 eloChangeA: viewModel.eloChangeA,
@@ -263,7 +341,11 @@ struct ScoreButton: View {
         scoreB: 6,
         startDate: Date(),
         settings: MatchSettings(),
-        scoreHistory: []
+        scoreHistory: [],
+        setsWonA: 0,
+        setsWonB: 0,
+        completedSets: [],
+        currentSetNumber: 1
     ))
     .modelContainer(for: [Player.self, MatchRecord.self])
 }
